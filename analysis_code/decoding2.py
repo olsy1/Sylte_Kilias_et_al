@@ -13,10 +13,10 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score, mean_absolute_error, mean_squared_error, confusion_matrix
 from scipy.stats import pearsonr
-import analysis as analysis
+import analysis_code.analysis as analysis
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 import random
-import get_data
+import analysis_code.get_data as get_data
 from scipy.special import softmax
 np.random.seed(42)
 random.seed(42)

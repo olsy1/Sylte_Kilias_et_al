@@ -11,8 +11,8 @@ from scipy.stats import trim_mean, pearsonr, spearmanr
 from numpy.linalg import norm
 from scipy.spatial import procrustes
 from dPCA import dPCA
-import get_data
-import helper_functions as hf
+import analysis_code.get_data as get_data
+import analysis_code.helper_functions as hf
 
 from ripser import ripser
 from persim import wasserstein
@@ -333,7 +333,7 @@ class TransientEmbedding:
             x_new = self.embedding_model.transform(self.transients)
         elif self.method == 'dpca':
             X1, X_trials1 = TransientEmbedding.prep_dpca(self.transients.T, pos)
-            self.embedding_model = dPCA.dPCA(labels='p', n_components=self.n_components, regularizer=None,  random_state=1)
+            self.embedding_model = dPCA.dPCA(labels='p', n_components=self.n_components, regularizer=None)
             self.embedding_model.protect = []
             _ = self.embedding_model.fit_transform(X1, trialX=X_trials1)
             n_neurons, n_timepoints = self.transients.T.shape

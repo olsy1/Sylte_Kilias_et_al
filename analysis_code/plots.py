@@ -1,7 +1,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-import get_data
+import analysis_code.get_data as get_data
 from matplotlib.animation import FuncAnimation
 from IPython.display import HTML
 from scipy import stats
@@ -608,7 +608,7 @@ def plot_scatter(data, prefix='std', figsize=None):
     
     for i, predictor in enumerate(var_names):
         sns.scatterplot(x=data[predictor], y=data[y_var], hue=data['animal_id'], ax=axes[i], s=100)
-        sns.regplot(x=data[predictor], y=data[y_var], scatter=False, color='red', ax=axes[i], ci=68)
+        sns.regplot(x=data[predictor], y=data[y_var], scatter=False, color='red', ax=axes[i], ci=68, seed=0)
         
         if prefix:
             x_label = f'Standardized {predictor[:-4]} (in SD units)'

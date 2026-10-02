@@ -1,13 +1,13 @@
 
 import numpy as np
-import get_data
+import analysis_code.get_data as get_data
 import matplotlib.pyplot as plt
-import population_activity as pop
-import helper_functions as hf
+import analysis_code.population_activity as pop
+import analysis_code.helper_functions as hf
 import copy
-import place_cell as pc
-import analysis
-import decoding2
+import analysis_code.place_cell as pc
+import analysis_code.analysis as analysis
+import analysis_code.decoding2 as decoding2
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
 

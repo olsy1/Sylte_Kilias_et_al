@@ -1,5 +1,5 @@
 import numpy as np
-import analysis
+import analysis_code.analysis as analysis
 from scipy.special import softmax
 from scipy import stats
 from sklearn.model_selection import train_test_split
@@ -7,14 +7,18 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import mean_absolute_error
 import random
 from scipy.stats import special_ortho_group
-import get_data
-import population_activity as pop
-import helper_functions as hf
+import analysis_code.get_data as get_data
+import analysis_code.population_activity as pop
+import analysis_code.helper_functions as hf
 
 
 np.random.seed(42)
 random.seed(42)
 noise_rng = np.random.RandomState(42)
+
+
+def _noise_rng(rng):
+    return rng if rng is not None else noise_rng
 
 
 def scale_and_digitize(data, min_val=1, max_val=20, num_bins=20):
@@ -33,15 +37,16 @@ def generate_controlled_shear(n_dim, shear_factor=1.0):
     return transform
 
 
-def generate_random_transformation(dim, n_transforms=10, sv_min=0, sv_max=5, random_state=42):
-    rng = np.random.RandomState(random_state)
+def generate_random_transformation(dim, n_transforms=10, sv_min=0, sv_max=5, rng=None):
+    if rng is None:
+        rng = np.random.default_rng(42)
     transformations = []
-    
+
     while len(transformations) < n_transforms:
-        sv_noise_level = np.random.uniform(sv_min, sv_max)
+        sv_noise_level = rng.uniform(sv_min, sv_max)
         Q = special_ortho_group.rvs(dim=dim, random_state=rng)
-        eps = np.random.randn(dim) * sv_noise_level
-        mask = np.random.rand(dim) < 0.3  # 30% of sv perturbed
+        eps = rng.standard_normal(dim) * sv_noise_level
+        mask = rng.random(dim) < 0.3  # 30% of sv perturbed
         eps *= mask
         sv = np.exp(eps)
         # scale determinant to 1
@@ -83,25 +88,25 @@ class PositionDecoder:
         weights_filtered = np.linalg.solve(XTX + reg_matrix, X_filtered.T @ y_onehot)
         self.weights[self.feature_mask] = weights_filtered
     
-    def get_individual_decoder_outputs(self, X, noise_level=0.0):
+    def get_individual_decoder_outputs(self, X, noise_level=0.0, rng=None):
         if noise_level > 0:
-            X = X + noise_rng.normal(0, noise_level, X.shape)
+            X = X + _noise_rng(rng).normal(0, noise_level, X.shape)
         return X @ self.weights
     
     def predict_proba(self, X):
         logits = self.get_individual_decoder_outputs(X)
         return softmax(logits, axis=1)
     
-    def predict(self, X, noise_level=0.0):
+    def predict(self, X, noise_level=0.0, rng=None):
         if noise_level > 0:
-            X = X + noise_rng.normal(0, noise_level, X.shape)
+            X = X + _noise_rng(rng).normal(0, noise_level, X.shape)
         logits = X @ self.weights
         return np.argmax(logits, axis=1)
 
 
-def analyze_decoding(X, y, decoder, noise_level=0.0):
+def analyze_decoding(X, y, decoder, noise_level=0.0, rng=None):
     if noise_level > 0:
-        X = X + noise_rng.normal(0, noise_level, X.shape)
+        X = X + _noise_rng(rng).normal(0, noise_level, X.shape)
     
     results = {}
     y_pred = decoder.predict(X)
@@ -125,9 +130,9 @@ def analyze_decoding(X, y, decoder, noise_level=0.0):
 
 
 
-def analyze_individual_decoders(X, y, decoder, noise_level=0.0, maps_downstream_pre=None):
+def analyze_individual_decoders(X, y, decoder, noise_level=0.0, maps_downstream_pre=None, rng=None):
     if noise_level > 0:
-        X = X + noise_rng.normal(0, noise_level, X.shape)
+        X = X + _noise_rng(rng).normal(0, noise_level, X.shape)
     
     results = {}
     decoder_outputs = decoder.get_individual_decoder_outputs(X)
@@ -163,7 +168,8 @@ def analyze_individual_decoders(X, y, decoder, noise_level=0.0, maps_downstream_
     
     return results
 
-def simulate_shear(datapath, day, context, noise_levels=[0.0, 0.1, 0.2, 0.5, 1.0], shear_factors=[1.0]):
+def simulate_shear(datapath, day, context, noise_levels=[0.0, 0.1, 0.2, 0.5, 1.0], shear_factors=[1.0], seed=0):
+    rng = np.random.default_rng(seed)
     data = analysis.trial_one_session_AK(datapath, day, context, standardize='stand_m', remove_day_inactive=True)
     X = data['calcium'] # neurons x time
     X = X.T
@@ -197,10 +203,10 @@ def simulate_shear(datapath, day, context, noise_levels=[0.0, 0.1, 0.2, 0.5, 1.0
     for noise in noise_levels:
         # original
         results['original']['final'][noise] = analyze_decoding(
-            X_test, y_test, decoder, noise
+            X_test, y_test, decoder, noise, rng=rng
         )
         results['original']['individual'][noise] = analyze_individual_decoders(
-            X_test, y_test, decoder, noise, maps_downstream_pre
+            X_test, y_test, decoder, noise, maps_downstream_pre, rng=rng
         )
         
         # rotation
@@ -209,10 +215,10 @@ def simulate_shear(datapath, day, context, noise_levels=[0.0, 0.1, 0.2, 0.5, 1.0
         decoder_rot.weights = rotation_matrix.T @ decoder.weights
         
         results['rotation']['final'][noise] = analyze_decoding(
-            X_rot, y_test, decoder_rot, noise
+            X_rot, y_test, decoder_rot, noise, rng=rng
         )
         results['rotation']['individual'][noise] = analyze_individual_decoders(
-            X_rot, y_test, decoder_rot, noise, maps_downstream_pre
+            X_rot, y_test, decoder_rot, noise, maps_downstream_pre, rng=rng
         )
         
         # for each shear
@@ -225,15 +231,17 @@ def simulate_shear(datapath, day, context, noise_levels=[0.0, 0.1, 0.2, 0.5, 1.0
             decoder_ctrl.weights = np.linalg.inv(controlled_transform) @ decoder.weights
             
             results[f'controlled_{factor}']['final'][noise] = analyze_decoding(
-                X_ctrl, y_test, decoder_ctrl, noise
+                X_ctrl, y_test, decoder_ctrl, noise, rng=rng
             )
             results[f'controlled_{factor}']['individual'][noise] = analyze_individual_decoders(
-                X_ctrl, y_test, decoder_ctrl, noise, maps_downstream_pre
+                X_ctrl, y_test, decoder_ctrl, noise, maps_downstream_pre, rng=rng
             )
-   
+
     return results
 
-def simulate_random_transform(datapath, day, context, noise=1, n_transforms=50):
+def simulate_random_transform(datapath, day, context, noise=1, n_transforms=50, seed=0):
+    transform_rng, noise_rng_local = [np.random.default_rng(s)
+                                      for s in np.random.SeedSequence(seed).spawn(2)]
     data = analysis.trial_one_session_AK(datapath, day, context, standardize='stand', remove_day_inactive=False)
     X = data['calcium'].T
     pos = data['pos']
@@ -246,10 +254,10 @@ def simulate_random_transform(datapath, day, context, noise=1, n_transforms=50):
     decoder_outputs_pre = decoder.get_individual_decoder_outputs(X_test)
     maps_downstream_pre, _ = get_data.average_spatial_tuning_function(decoder_outputs_pre.T, y_test)
 
-    y_pred_original = decoder.predict(X_test, noise_level=noise)
+    y_pred_original = decoder.predict(X_test, noise_level=noise, rng=noise_rng_local)
     original_mae = mean_absolute_error(y_test, y_pred_original)
 
-    transformations = generate_random_transformation(X_test.shape[1], n_transforms=n_transforms)
+    transformations = generate_random_transformation(X_test.shape[1], n_transforms=n_transforms, rng=transform_rng)
 
     angle_list = []
     subspace_list = []
@@ -272,7 +280,7 @@ def simulate_random_transform(datapath, day, context, noise=1, n_transforms=50):
 
         decoder_trans.weights = M_inv @ decoder.weights
 
-        y_pred_trans = decoder_trans.predict(X_trans, noise_level=noise)
+        y_pred_trans = decoder_trans.predict(X_trans, noise_level=noise, rng=noise_rng_local)
         mae_trans = mean_absolute_error(y_test, y_pred_trans)
 
         ortho_val = measure_orthogonality(M)
@@ -287,7 +295,7 @@ def simulate_random_transform(datapath, day, context, noise=1, n_transforms=50):
 
         drift = pop.ManifoldAnalysis.population_correlation(maps1, maps2)
 
-        decoder_outputs_post = decoder_trans.get_individual_decoder_outputs(X_trans, noise_level=noise)
+        decoder_outputs_post = decoder_trans.get_individual_decoder_outputs(X_trans, noise_level=noise, rng=noise_rng_local)
         maps_downstream_post, _ = get_data.average_spatial_tuning_function(decoder_outputs_post.T, y_test)
         drift_downstream = pop.ManifoldAnalysis.population_correlation(maps_downstream_post, maps_downstream_pre)
 

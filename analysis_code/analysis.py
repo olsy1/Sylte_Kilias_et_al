@@ -1,12 +1,12 @@
 import numpy as np
-import get_data
+import analysis_code.get_data as get_data
 import matplotlib.pyplot as plt
-import population_activity as pop
-import helper_functions as hf
-import place_cell as pc
+import analysis_code.population_activity as pop
+import analysis_code.helper_functions as hf
+import analysis_code.place_cell as pc
 from scipy.linalg import norm
-import simulate_drift as sim
-import decoding2 as decoding2
+import analysis_code.simulate_drift as sim
+import analysis_code.decoding2 as decoding2
 from sklearn.preprocessing import StandardScaler
 from scipy import stats
 import random
@@ -50,7 +50,7 @@ def trial_one_session_AK(datapath, session, Context, remove_inactive=False, tran
         dp.calcium = dp.calcium[(remove_stable <= remove_stable_tresh) | np.isnan(remove_stable)]
 
 
-    elif standardize == 'stand':
+    if standardize == 'stand':
         dp.calcium = hf.standardize_transients(dp.calcium.T, method='standard').T
     elif standardize == 'stand_m':
         dp.calcium = hf.standardize_transients(dp.calcium.T, method='standard_m').T

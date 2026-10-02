@@ -1,6 +1,6 @@
 import numpy as np
 from scipy import stats
-import decoding2
+import analysis_code.decoding2 as decoding2
 import copy
 import random
 
@@ -9,11 +9,11 @@ random.seed(42)
 
 
 def average_spatial_tuning_function(transients, lin_pos, bins=20):
-    hist = np.zeros((X.shape[0], bins))
+    hist = np.zeros((transients.shape[0], bins))
     bin_edges = np.linspace(np.min(lin_pos), np.max(lin_pos), bins + 1)
-    
-    for i in range(X.shape[0]):
-        hist[i], _ = np.histogram(lin_pos, bins=bin_edges, weights=X[i], density=False)
+
+    for i in range(transients.shape[0]):
+        hist[i], _ = np.histogram(lin_pos, bins=bin_edges, weights=transients[i], density=False)
         occupancy, _ = np.histogram(lin_pos, bins=bin_edges)
         valid_bins = occupancy > 0
         hist[i, valid_bins] = hist[i, valid_bins] / occupancy[valid_bins]
