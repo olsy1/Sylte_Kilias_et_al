@@ -1,7 +1,7 @@
 
 import numpy as np
 from scipy import stats
-import get_data
+import analysis_code.get_data as get_data
 import matplotlib.pyplot as plt
 from scipy.linalg import expm, logm
 from typing import List, Tuple

@@ -12,8 +12,8 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 from scipy import spatial
-import population_activity as pop
-import helper_functions as hf
+import analysis_code.population_activity as pop
+import analysis_code.helper_functions as hf
 
 
 

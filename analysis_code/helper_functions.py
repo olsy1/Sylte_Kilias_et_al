@@ -2,7 +2,7 @@ import numpy as np
 from sklearn import preprocessing
 from scipy import signal
 from scipy.ndimage import gaussian_filter1d
-import get_data
+import analysis_code.get_data as get_data
 
 
 def get_moving_frames(speed, threshold=0.01, exclude_frames_after=None):
