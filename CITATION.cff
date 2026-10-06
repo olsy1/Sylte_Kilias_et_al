@@ -2,7 +2,6 @@ cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 type: software
 authors:
-authors:
   - family-names: Sylte
     given-names: Ole Christian
     orcid: "https://orcid.org/0000-0001-7352-3038"
@@ -16,6 +15,6 @@ authors:
     given-names: Jonas-Frederic
     orcid: "https://orcid.org/0000-0002-6854-7294"
 title: "Representational drift in hippocampal CA1 is geometrically preserved"
-version: 1.0.0
+version: 1.0.1
 url: "https://github.com/olsy1/Sylte_Kilias_et_al"
 license: MIT

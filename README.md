@@ -17,6 +17,6 @@ Python 3.8 with numpy, scipy, pandas, h5py, matplotlib, seaborn, scikit-learn, s
 3. Run the notebooks from the repository's top-level folder (they import `analysis_code`).
 
 ## Citation
-If you use this code, please cite the repository (https://doi.org/10.5281/zenodo.23109247) and the associated published paper: Sylte, O. C., Kilias, A., Bartos, M. & Sauer, J. F. Representational drift in hippocampal CA1 is geometrically preserved. 
+If you use this code, please cite the repository (https://doi.org/10.5281/zenodo.23109246) and the associated published paper: Sylte, O. C., Kilias, A., Bartos, M. & Sauer, J. F. Representational drift in hippocampal CA1 is geometrically preserved. 
 
-Repository: Sylte, O. C., Kilias, A., Bartos, M., & Sauer, J.-F. (2026). Representational drift in hippocampal CA1 is geometrically preserved (Version v1.0.0) [Computer software]. Zenodo. https://doi.org/10.5281/zenodo.23109247
+Repository: Sylte, O. C., Kilias, A., Bartos, M., & Sauer, J.-F. (2026). Representational drift in hippocampal CA1 is geometrically preserved (Version v1.0.1) [Computer software]. Zenodo. https://doi.org/10.5281/zenodo.23109246
